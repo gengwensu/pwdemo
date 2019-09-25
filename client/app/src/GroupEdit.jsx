@@ -16,7 +16,6 @@ class GroupEdit extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      id: "new",
       item: this.emptyItem
     };
     this.handleChange = this.handleChange.bind(this);
@@ -28,7 +27,7 @@ class GroupEdit extends Component {
       const group = await (await fetch(
         `/api/groups/${this.props.match.params.id}`
       )).json();
-      this.setState({ id: `${this.props.match.params.id}`, item: group });
+      this.setState({ item: group });
     }
   }
 
@@ -44,11 +43,10 @@ class GroupEdit extends Component {
 
   async handleSubmit(event) {
     event.preventDefault();
-    const { id, item } = this.state;
-    const url = (id === "new")? "/api/groups" : `/api/groups/${id}`;
+    const { item } = this.state;
 
-    await fetch(url, {
-      method: (id !== "new") ? "PUT" : "POST",
+    await fetch("/api/groups/"+item.id, {
+      method: (item.id) ? "PUT" : "POST",
       headers: {
         "Accept": "application/json",
         "Content-Type": "application/json"
@@ -59,8 +57,8 @@ class GroupEdit extends Component {
   }
 
   render() {
-    const { id, item } = this.state; 
-    const title = <h2>{(id !== "new") ? "Edit Group" : "Add Group"}</h2>;
+    const { item } = this.state; 
+    const title = <h2>{item.id ? "Edit Group" : "Add Group"}</h2>;
 
     return (
       <div>
