@@ -15,15 +15,12 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Entity
-public class Event {
-    @Id
-    @GeneratedValue
-    private Long id;
-    private Instant date;
-    private String title;
-    private String description;
-    @ManyToMany
-    private Set<User> attendees;
+public class PWTokenResponse {
+    private String paymentType;
+    private String paywayCode;
+    private String paywayMessage;
+    private String paywayRequestToken;
+    private String transactionName;
+    private int idSource;
+    private int idDivision;
 }

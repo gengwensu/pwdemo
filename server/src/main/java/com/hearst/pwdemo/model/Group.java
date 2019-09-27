@@ -26,7 +26,4 @@ public class Group {
     private String postalCode;
     @ManyToOne(cascade = CascadeType.PERSIST)
     private User user;
-
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Set<Event> events;
 }

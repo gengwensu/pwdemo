@@ -1,6 +1,6 @@
 package com.hearst.pwdemo;
 
-import com.hearst.pwdemo.model.Event;
+import com.hearst.pwdemo.model.PWTokenResponse;
 import com.hearst.pwdemo.model.Group;
 import com.hearst.pwdemo.model.GroupRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -20,16 +20,8 @@ public class Initializer implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        Stream.of("Denver JUG", "Utah JUG", "Seattle JUG",
-                "Richmond JUG").forEach(name -> repository.save(new Group(name)));
-
-        Group djug = repository.findByName("Denver JUG");
-        Event e = Event.builder().title("Full Stack Reactive")
-                .description("Reactive with Spring Boot + React")
-                .date(Instant.parse("2018-12-12T18:00:00.000Z"))
-                .build();
-        djug.setEvents(Collections.singleton(e));
-        repository.save(djug);
+        Stream.of("Macy's", "Chase Bank", "Con Edison",
+                "Geico").forEach(name -> repository.save(new Group(name)));
 
         repository.findAll().forEach(System.out::println);
     }
