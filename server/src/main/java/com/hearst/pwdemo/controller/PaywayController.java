@@ -58,6 +58,7 @@ public class PaywayController {
             response.setIdSource(11);
             response.setIdDivision(7);
             response.setPaymentType(paymentType);
+            response.setAmount(amount);
             log.info("response sent to FE: {}", response.toString());
         }
 

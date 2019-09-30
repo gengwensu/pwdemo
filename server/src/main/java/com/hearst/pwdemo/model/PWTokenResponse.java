@@ -21,6 +21,7 @@ public class PWTokenResponse {
     private String paywayMessage;
     private String paywayRequestToken;
     private String transactionName;
+    private Long amount;
     private int idSource;
     private int idDivision;
 }
