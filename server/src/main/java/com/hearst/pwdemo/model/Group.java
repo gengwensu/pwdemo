@@ -24,6 +24,10 @@ public class Group {
     private String stateOrProvince;
     private String country;
     private String postalCode;
+    private int account;
     @ManyToOne(cascade = CascadeType.PERSIST)
     private User user;
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Set<Event> events;
 }

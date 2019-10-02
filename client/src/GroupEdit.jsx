@@ -24,7 +24,7 @@ class GroupEdit extends Component {
 
   async componentDidMount() {
     if (this.props.match.params.id !== "new") {
-      const group = await (await fetch(
+      const group = (await fetch(
         `/api/groups/${this.props.match.params.id}`
       )).json();
       this.setState({ item: group });
@@ -58,7 +58,7 @@ class GroupEdit extends Component {
 
   render() {
     const { item } = this.state; 
-    const title = <h2>{item.id ? "Edit Group" : "Add Group"}</h2>;
+    const title = <h2>{item.id ? "Edit Account" : "Add Account"}</h2>;
 
     return (
       <div>
@@ -99,6 +99,16 @@ class GroupEdit extends Component {
                 autoComplete="address-level1"
               />
             </FormGroup>
+            <FormGroup>
+              <Label for="address">Account</Label>
+              <Input
+                type="number"
+                name="account"
+                id="account"
+                value={item.account || 0}
+                onChange={this.handleChange}
+              />
+            </FormGroup>
             <div className="row">
               <FormGroup className="col-md-4 mb-3">
                 <Label for="stateOrProvince">State/Province</Label>
@@ -123,7 +133,7 @@ class GroupEdit extends Component {
                 />
               </FormGroup>
               <FormGroup className="col-md-3 mb-3">
-                <Label for="country">Postal Code</Label>
+                <Label for="postalCode">Postal Code</Label>
                 <Input
                   type="text"
                   name="postalCode"

@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import { Button, ButtonGroup, Container, Table } from "reactstrap";
+import { Button, Container, Table } from "reactstrap";
+import GroupRow from "./GroupRow";
 import AppNavbar from "./AppNavbar";
 import { Link } from "react-router-dom";
 
@@ -7,7 +8,6 @@ class GroupList extends Component {
   constructor(props) {
     super(props);
     this.state = { groups: [], isLoading: true };
-    this.remove = this.remove.bind(this);
   }
 
   componentDidMount() {
@@ -15,19 +15,6 @@ class GroupList extends Component {
     fetch("api/groups")
       .then(r => r.json())
       .then(d => this.setState({ groups: d, isLoading: false }));
-  }
-
-  async remove(id) {
-    await fetch(`/api/groups/${id}`, {
-      method: "DELETE",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      }
-    }).then(() => {
-      let updatedGroups = [...this.state.groups].filter(i => i.id !== id);
-      this.setState({ groups: updatedGroups });
-    });
   }
 
   render() {
@@ -38,46 +25,8 @@ class GroupList extends Component {
     }
 
     const groupList = groups.map(g => {
-      const address = `${g.address || ""} ${g.city || ""} ${g.stateOrProvince ||
-        ""}`;
       return (
-        <tr key={g.id}>
-          <td style={{ whiteSpace: "nowrap" }}>{g.name}</td>
-          <td>{address}</td>
-          <td>
-            {g.events.map(event => {
-              return (
-                <div key={event.id}>
-                  {new Intl.DateTimeFormat("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "2-digit"
-                  }).format(new Date(event.date))}
-                  : {event.title}
-                </div>
-              );
-            })}
-          </td>
-          <td>
-            <ButtonGroup>
-              <Button
-                size="sm"
-                color="primary"
-                tag={Link}
-                to={"/groups/" + g.id}
-              >
-                Edit
-              </Button>
-              <Button
-                size="sm"
-                color="danger"
-                onClick={() => this.remove(g.id)}
-              >
-                Delete
-              </Button>
-            </ButtonGroup>
-          </td>
-        </tr>
+        <GroupRow payee={g} history={this.props.history}  key={g.id} />
       );
     });
 
@@ -87,17 +36,19 @@ class GroupList extends Component {
         <Container fluid>
           <div className="float-right">
             <Button color="success" tag={Link} to="/groups/new">
-              Add Group
+              Add Account
             </Button>
           </div>
-          <h3>My JUG Tour</h3>
+          <h3>Payway Payments</h3>
           <Table className="mt-4">
             <thead>
               <tr>
                 <th width="20%">Name</th>
-                <th width="20%">Location</th>
-                <th>Events</th>
-                <th width="10%">Actions</th>
+                <th width="20%">Address</th>
+                <th width="10%">Account</th>
+                <th width="10%">Amount</th>
+                <th width="30%">Payment Methods</th>
+                <th width="10%">Account Management</th>
               </tr>
             </thead>
             <tbody>{groupList}</tbody>
