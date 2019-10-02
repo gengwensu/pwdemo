@@ -35,7 +35,7 @@ class PWCCSetup extends Component {
     }
     
     async componentDidMount() {
-      if (this.state.payee.amount > 0) {
+      if (this.state.payee.amount >= 0) {
           const pwResponse = await (await fetch(
               "pwbillpayments/CreditCard?amount="+this.state.payee.amount
           )).json();
@@ -71,8 +71,9 @@ class PWCCSetup extends Component {
           "Content-Type": "application/json"
         },
         body: JSON.stringify(request)
-      });
-      this.props.history.push({
+      }).then(res=>res.json());
+      
+      await  this.props.history.push({
         pathname: "/groups",
         state: {response: response}
       });

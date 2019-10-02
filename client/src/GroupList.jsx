@@ -11,6 +11,7 @@ class GroupList extends Component {
   }
 
   componentDidMount() {
+    if(this.props.location.state) alert(JSON.stringify(this.props.location.state.response));
     this.setState({ isLoading: true });
     fetch("api/groups")
       .then(r => r.json())
