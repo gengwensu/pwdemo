@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.json.JSONObject;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,12 +17,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PWTokenResponse {
-    private String paymentType;
     private String paywayCode;
     private String paywayMessage;
-    private String paywayRequestToken;
-    private String transactionName;
-    private Long amount;
-    private int idSource;
-    private int idDivision;
+    private String paywaySessionToken;
 }

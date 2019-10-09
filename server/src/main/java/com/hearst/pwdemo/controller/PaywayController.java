@@ -23,16 +23,10 @@ import java.util.*;
 @RequestMapping("/pwbillpayments")
 public class PaywayController {
     private final Logger log = LoggerFactory.getLogger(PaywayController.class);
-    final private List<String> paymentTypes = new ArrayList<>(Arrays.asList("CreditCard", "ApplePay"));
-    private String url = "https://devedgilpayway.net/PaywayWS/Payment/";
+    private String url = "https://devedgilpayway.net/PaywayWS/Session";
 
-    @GetMapping("/")
-    Collection<String> getPaymentTypes() {
-        return paymentTypes;
-    }
-
-    @GetMapping("/{paymentType}")
-    ResponseEntity<?> getPWTokenForTypeWithAmount(@PathVariable String paymentType, @RequestParam Long amount) {
+    @GetMapping("/Session")
+    ResponseEntity<?> getPWSessionToken() {
         CloseableHttpClient httpClient
                 = HttpClients.custom()
                 .setSSLHostnameVerifier(new NoopHostnameVerifier())
@@ -45,22 +39,12 @@ public class PaywayController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         PWTokenResponse response = new PWTokenResponse();
-        JSONObject request = new JSONObject("{\"request\": \"queueSale\",\"userName\":\"hearstrestwsdev\",\"password\":\"hearstrestwsdev1!\"}");
-        if (paymentType.equalsIgnoreCase("CreditCard")) {
-            JSONObject cardTxn = new JSONObject("{\"idSource\":11}");
-            cardTxn.put("amount", amount);
-            request.put("cardTransaction", cardTxn);
-            log.info("Before Post, url : {}", url + paymentType);
-            log.info("payload : {}", request.toString());
-            HttpEntity<String> req = new HttpEntity<String>(request.toString(), headers);
-            response = restTemplate.postForObject(url + paymentType, req, PWTokenResponse.class);
-            log.info("response from PaywayWS: {}", response.toString());
-            response.setIdSource(11);
-            response.setIdDivision(7);
-            response.setPaymentType(paymentType);
-            response.setAmount(amount);
-            log.info("response sent to FE: {}", response.toString());
-        }
+        JSONObject request = new JSONObject("{\"request\": \"getPaywaySession\",\"userName\":\"hearstrestwsdev\",\"password\":\"hearstrestwsdev1!\"}");
+        log.info("Before Post, url : {}", url);
+        log.info("payload : {}", request.toString());
+        HttpEntity<String> req = new HttpEntity<String>(request.toString(), headers);
+        response = restTemplate.postForObject(url, req, PWTokenResponse.class);
+        log.info("response from PaywayWS: {}", response.toString());
 
         return ResponseEntity.ok().body(response);
     }
