@@ -5,17 +5,28 @@ import AppNavbar from "./AppNavbar";
 import { Link } from "react-router-dom";
 
 class GroupList extends Component {
+  emptyResponse = {
+    paywayCode: "",
+    paywayMessage: "",
+    paywaySessionToken: ""
+  };
+
   constructor(props) {
     super(props);
     this.state = { groups: [], isLoading: true };
   }
 
-  componentDidMount() {
-    if(this.props.location.state) alert(JSON.stringify(this.props.location.state.response));
+  async componentDidMount() {
+    if (this.props.location.state)
+      alert(JSON.stringify(this.props.location.state.response));
     this.setState({ isLoading: true });
-    fetch("api/groups")
+
+    await fetch("api/groups")
       .then(r => r.json())
-      .then(d => this.setState({ groups: d, isLoading: false }));
+      .then(d => this.setState({ groups: d }));
+
+    const pwResponse = await (await fetch("pwbillpayments/Session")).json();
+    this.setState({ pwResponse: pwResponse, isLoading: false });
   }
 
   render() {
@@ -27,7 +38,12 @@ class GroupList extends Component {
 
     const groupList = groups.map(g => {
       return (
-        <GroupRow payee={g} history={this.props.history}  key={g.id} />
+        <GroupRow
+          payee={g}
+          sessionToken={this.state.pwResponse.paywaySessionToken}
+          history={this.props.history}
+          key={g.id}
+        />
       );
     });
 

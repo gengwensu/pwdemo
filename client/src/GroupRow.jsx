@@ -3,6 +3,7 @@ import { Button, ButtonGroup } from "reactstrap";
 import { Link, withRouter } from "react-router-dom";
 import "./ApplePay.css";
 import ApplePayButton from "./ApplePayButton";
+import { performApplePayPayment } from "./ApplePayHandler";
 
 class GroupRow extends Component {
   constructor(props) {
@@ -13,6 +14,7 @@ class GroupRow extends Component {
     };
     this.remove = this.remove.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.onClick = this.onClick.bind(this);
   }
 
   async remove(id) {
@@ -31,6 +33,17 @@ class GroupRow extends Component {
     payee.amount = event.target.value;
 
     this.setState({ payee: payee });
+  }
+
+  onClick() {
+    console.log("amount passed in: ", this.state.payee.amount);
+    performApplePayPayment(this.state.payee.amount, this.state.sessionToken)
+      .then(status => {
+        console.log("payment status: ", status);
+      })
+      .catch(err => {
+        console.log("payment failure", err);
+      });
   }
 
   render() {
@@ -63,10 +76,7 @@ class GroupRow extends Component {
             >
               Credit Card
             </Button>
-            <ApplePayButton
-              amount={this.state.payee.amount}
-              sessionToken={this.state.sessionToken}
-            />
+            <ApplePayButton onClick={() => this.onClick()} />
           </ButtonGroup>
         </td>
         <td>
