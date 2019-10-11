@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { isApplePayAvailable } from "./ApplePayHandler";
+import { isApplePayJsAvailable } from "./ApplePayHandler";
 import "./ApplePay.css";
 
 const ApplePayButtonStatus = { UNKNOWN: 0, AVAILABLE: 1, NOT_AVAILABLE: 2 };
@@ -12,14 +12,26 @@ class ApplePayButton extends Component {
     };
   }
 
-  async componentDidMount() {
-    let canMakePayments = await isApplePayAvailable();
-    console.log("ApplePayButton canMakePayments: ", canMakePayments);
-    this.setState({
-      applePayButtonStatus: canMakePayments
-        ? ApplePayButtonStatus.AVAILABLE
-        : ApplePayButtonStatus.NOT_AVAILABLE
-    });
+  componentDidMount() {
+    isApplePayJsAvailable()
+      .then(canMakePayments => {
+        console.log(
+          "calling isApplePayJsAvailable. canMakePayments: ",
+          canMakePayments
+        );
+        /* this.setState({
+          applePayButtonStatus: canMakePayments
+            ? ApplePayButtonStatus.AVAILABLE
+            : ApplePayButtonStatus.NOT_AVAILABLE
+        }); */
+        this.setState({ applePayButtonStatus: ApplePayButtonStatus.AVAILABLE });
+      })
+      .catch(err => {
+        console.log(err);
+        this.setState({
+          applePayButtonStatus: ApplePayButtonStatus.NOT_AVAILABLE
+        });
+      });
   }
 
   render() {

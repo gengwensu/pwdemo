@@ -1,17 +1,27 @@
 // const merchantIdentifier = "merchant.com.paywaycomplete.payway";
 const APPLE_PAY_VERSION_NUMBER = 1;
 const pwurl = "https://devedgilpayway.net/PaywayWS/";
+const merchantIdentifier = "merchant.com.paywaycomplete.payway";
+const PaymentStatus = { SUCCESS: 0, FAILURE: 1, CANCEL: 2 };
 
-export const isApplePayAvailable = async () => {
-  if (window.ApplePaySession && window.ApplePaySession.canMakePayments()) {
-    console.log("in ApplePayHandler");
-    let canMakePayments = await window.ApplePaySession.canMakePaymentsWithActiveCard(
-      "merchant.com.paywaycomplete.payway"
+const existsApplePayJsApi = () => {
+  return new Promise((resolve, reject) => {
+    try {
+      const enabled =
+        window.ApplePaySession && window.ApplePaySession.canMakePayments();
+      resolve(enabled);
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+export const isApplePayJsAvailable = () => {
+  return existsApplePayJsApi().then(() => {
+    return window.ApplePaySession.canMakePaymentsWithActiveCard(
+      merchantIdentifier
     );
-    console.log("isApplePayAvailable canMakePayments: ", canMakePayments);
-    //return canMakePayments;
-    return true;
-  }
+  });
 };
 
 const getPaymentRequest = amount => {
@@ -44,13 +54,11 @@ const getPaymentRequest = amount => {
 
 const getOnValidateMerchant = (resolve, reject, session, pwToken) => {
   return event => {
+    event.preventDefault();
     console.log("validateMerchant event!");
     performValidation(event.validationURL, pwToken)
       .then(response => {
-        console.log(
-          "Merchant validation successful, response is: ",
-          JSON.stringify(response)
-        );
+        console.log("Merchant validation successful, response is: ", response);
         console.log(
           "before completeMerchantValidation. appleSessionToken : ",
           JSON.parse(response.appleSessionToken)
@@ -59,7 +67,7 @@ const getOnValidateMerchant = (resolve, reject, session, pwToken) => {
         session.completeMerchantValidation(
           JSON.parse(response.appleSessionToken)
         );
-        //console.log("after session.completeMerchantValidation");
+        console.log("after session.completeMerchantValidation");
       })
       .catch(err => {
         console.log("Validate error ", err);
@@ -87,27 +95,31 @@ const performValidation = (hostURL, pwToken) => {
 
 const getOnPaymentAuthorized = (resolve, reject, session, pwToken) => {
   return event => {
+    event.preventDefault();
     console.log("PaymentAuthorized event!");
     performApplePayQRequest(pwToken, event.payment.token.paymentData)
       .then(response => {
         console.log("Q request successful, response is: ", response);
         if (response.status === 200) {
           session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
+          resolve(PaymentStatus.SUCCESS);
         } else {
           console.log("Payment error in response ", JSON.stringify(response));
           session.completePayment(window.ApplePaySession.STATUS_FAILURE);
+          resolve(PaymentStatus.FAILURE);
         }
       })
       .catch(err => {
         console.log("Payment error ", err);
-        session.abort();
+        session.completePayment(window.ApplePaySession.STATUS_FAILURE);
+        reject(err);
       });
   };
 };
 
 const performApplePayQRequest = (pwToken, data) => {
   const request = {
-    request: "sendQueuedTransaction",
+    request: "authorize",
     paywaySessionToken: pwToken,
     applePayData: data,
     accountInputMode: "applePayToken",
@@ -126,6 +138,13 @@ const performApplePayQRequest = (pwToken, data) => {
     body: JSON.stringify(request)
   }).then(res => res.json());
 };
+
+/* const getOnCancel = (resolve, reject, session) => {
+  return event => {
+    console.log("Session cancelled!!!");
+    resolve(PaymentStatus.CANCEL);
+  };
+}; */
 
 export const performApplePayPayment = (amount, token) => {
   return new Promise((resolve, reject) => {
@@ -148,6 +167,8 @@ export const performApplePayPayment = (amount, token) => {
       token,
       amount
     );
+
+    // session.oncancel = getOnCancel(resolve, reject, session);
 
     session.begin();
   });

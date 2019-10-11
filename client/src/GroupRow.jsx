@@ -39,10 +39,10 @@ class GroupRow extends Component {
     console.log("amount passed in: ", this.state.payee.amount);
     performApplePayPayment(this.state.payee.amount, this.state.sessionToken)
       .then(status => {
-        console.log("payment status: ", status);
+        console.log("Payment success: ", status);
       })
       .catch(err => {
-        console.log("payment failure", err);
+        console.log("Payment error: ", err);
       });
   }
 
