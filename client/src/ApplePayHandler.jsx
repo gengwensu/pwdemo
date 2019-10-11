@@ -42,9 +42,10 @@ const getPaymentRequest = amount => {
   };
 };
 
-const getOnValidateMerchant = (session, pwToken) => {
+const getOnValidateMerchant = (resolve, reject, session, pwToken) => {
   return event => {
-    performValidation(event, pwToken)
+    console.log("validateMerchant event!");
+    performValidation(event.validationURL, pwToken)
       .then(response => {
         console.log(
           "Merchant validation successful, response is: ",
@@ -58,19 +59,19 @@ const getOnValidateMerchant = (session, pwToken) => {
         session.completeMerchantValidation(
           JSON.parse(response.appleSessionToken)
         );
-        console.log("after session.completeMerchantValidation");
+        //console.log("after session.completeMerchantValidation");
       })
       .catch(err => {
-        console.log("Validate error ", JSON.stringify(err));
-        // session.abort();
+        console.log("Validate error ", err);
+        session.abort();
       });
   };
 };
 
-const performValidation = (event, pwToken) => {
+const performValidation = (hostURL, pwToken) => {
   const request = {
     request: "getApplePaySession",
-    url: event.validationURL,
+    url: hostURL,
     domain: "devedgilpayway.net",
     paywayRequestToken: pwToken
   };
@@ -84,16 +85,13 @@ const performValidation = (event, pwToken) => {
   }).then(res => res.json());
 };
 
-const getOnPaymentAuthorized = (session, pwToken, amount) => {
+const getOnPaymentAuthorized = (resolve, reject, session, pwToken) => {
   return event => {
-    performApplePayQRequest(
-      event,
-      amount,
-      pwToken,
-      event.payment.token.paymentData
-    )
+    console.log("PaymentAuthorized event!");
+    performApplePayQRequest(pwToken, event.payment.token.paymentData)
       .then(response => {
-        if (response.code === 100) {
+        console.log("Q request successful, response is: ", response);
+        if (response.status === 200) {
           session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
         } else {
           console.log("Payment error in response ", JSON.stringify(response));
@@ -101,29 +99,24 @@ const getOnPaymentAuthorized = (session, pwToken, amount) => {
         }
       })
       .catch(err => {
-        console.log("Payment error ", JSON.stringify(err));
-        session.completePayment(window.ApplePaySession.STATUS_FAILURE);
+        console.log("Payment error ", err);
+        session.abort();
       });
   };
 };
 
-const performApplePayQRequest = (event, amount, pwToken, data) => {
+const performApplePayQRequest = (pwToken, data) => {
   const request = {
-    request: "authorize",
-    url: event.validationURL,
+    request: "sendQueuedTransaction",
     paywaySessionToken: pwToken,
-    applePayToken: data,
+    applePayData: data,
     accountInputMode: "applePayToken",
-    cardTransaction: {
-      eciType: 2,
-      name: "",
-      idSource: 11,
-      amount: amount
-    },
+    transactionSourceId: 11,
     cardAccount: {
       zip: 10001
     }
   };
+  console.log("in performApplePayQRequest, request: ", request);
   return fetch(pwurl + "Payment/CreditCard", {
     method: "POST",
     headers: {
