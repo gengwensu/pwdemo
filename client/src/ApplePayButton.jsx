@@ -13,6 +13,17 @@ class ApplePayButton extends Component {
   }
 
   componentDidMount() {
+    if (window.ApplePaySession && window.ApplePaySession.canMakePayments()) {
+      let promise = window.ApplePaySession.canMakePaymentsWithActiveCard(
+        "merchant.com.paywaycomplete.payway"
+      );
+      promise.then(function(canMakePayments) {
+        console.log(
+          "return from canMakePaymentsWithActiveCard. result is ",
+          canMakePayments
+        );
+      });
+    }
     isApplePayJsAvailable()
       .then(canMakePayments => {
         console.log(

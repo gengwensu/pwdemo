@@ -52,15 +52,15 @@ const getPaymentRequest = amount => {
 
 const getOnValidateMerchant = (resolve, reject, session, pwToken) => {
   return event => {
-    event.preventDefault();
-    /* console.log("validateMerchant event!"); */
+    /* event.preventDefault(); */
+    console.log("validateMerchant event!");
     performValidation(event.validationURL, pwToken)
       .then(response => {
-        /* console.log("Merchant validation successful, response is: ", response);
+        console.log("Merchant validation successful, response is: ", response);
         console.log(
           "before completeMerchantValidation. appleSessionToken : ",
           JSON.parse(response.appleSessionToken)
-        ); */
+        );
 
         session.completeMerchantValidation(
           JSON.parse(response.appleSessionToken)
@@ -79,7 +79,9 @@ const performValidation = (hostURL, pwToken) => {
     request: "getApplePaySession",
     url: hostURL,
     domain: "devedgilpayway.net",
-    paywayRequestToken: pwToken
+    /* domain: window.location.hostname, */
+    /* sessionType: "applePay", */
+    paywaySessionToken: pwToken
   };
   return fetch(pwurl + "Session", {
     method: "POST",
@@ -91,11 +93,11 @@ const performValidation = (hostURL, pwToken) => {
   }).then(res => res.json());
 };
 
-const getOnPaymentAuthorized = (resolve, reject, session, pwToken, amount) => {
+const getOnPaymentAuthorized = (resolve, reject, session, pwToken) => {
   return event => {
     event.preventDefault();
     console.log("PaymentAuthorized event!");
-    performApplePayQRequest(pwToken, event.payment.token.paymentData, amount)
+    performApplePayQRequest(pwToken, event.payment.token.paymentData)
       .then(response => {
         console.log("Q request successful, response is: ", response);
         if (response.status === 200) {
@@ -115,18 +117,13 @@ const getOnPaymentAuthorized = (resolve, reject, session, pwToken, amount) => {
   };
 };
 
-const performApplePayQRequest = (pwToken, data, amount) => {
+const performApplePayQRequest = (pwToken, data) => {
   const request = {
-    request: "sale",
+    request: "sendQueueTransaction",
     paywaySessionToken: pwToken,
     applePayData: data,
     accountInputMode: "applePayToken",
     transactionSourceId: 11,
-    cardTransaction: {
-      eciType: 2,
-      name: "",
-      amount: amount
-    },
     cardAccount: {
       zip: 10001
     }
@@ -167,8 +164,7 @@ export const performApplePayPayment = (amount, token) => {
       resolve,
       reject,
       session,
-      token,
-      amount
+      token
     );
 
     // session.oncancel = getOnCancel(resolve, reject, session);
