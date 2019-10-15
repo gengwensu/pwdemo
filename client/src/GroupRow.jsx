@@ -38,11 +38,14 @@ class GroupRow extends Component {
   onClick() {
     console.log("amount passed in: ", this.state.payee.amount);
     performApplePayPayment(this.state.payee.amount, this.state.sessionToken)
-      .then(status => {
-        console.log("Payment success: ", status);
+      .then(response => {
+        console.log("Payment success: ", response.status);
+        this.setState({ paymentResponse: response });
+        alert(this.paymentResponse);
       })
       .catch(err => {
         console.log("Payment error: ", err);
+        alert("apple pay not successful");
       });
   }
 

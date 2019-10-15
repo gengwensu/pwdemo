@@ -37,37 +37,35 @@ const getPaymentRequest = amount => {
     lineItems: [
       {
         label: "Subscription",
-        amount: amount,
-        type: "final"
+        amount: amount
       }
     ],
 
     total: {
       label: "Total",
-      amount: amount,
-      type: "final"
+      amount: amount
     },
     supportedNetworks: ["amex", "discover", "masterCard", "visa"],
-    merchantCapabilities: ["supports3DS"]
+    merchantCapabilities: ["supports3DS", "supportsCredit"]
   };
 };
 
 const getOnValidateMerchant = (resolve, reject, session, pwToken) => {
   return event => {
     event.preventDefault();
-    console.log("validateMerchant event!");
+    /* console.log("validateMerchant event!"); */
     performValidation(event.validationURL, pwToken)
       .then(response => {
-        console.log("Merchant validation successful, response is: ", response);
+        /* console.log("Merchant validation successful, response is: ", response);
         console.log(
           "before completeMerchantValidation. appleSessionToken : ",
           JSON.parse(response.appleSessionToken)
-        );
+        ); */
 
         session.completeMerchantValidation(
           JSON.parse(response.appleSessionToken)
         );
-        console.log("after session.completeMerchantValidation");
+        /* console.log("after session.completeMerchantValidation"); */
       })
       .catch(err => {
         console.log("Validate error ", err);
@@ -93,11 +91,11 @@ const performValidation = (hostURL, pwToken) => {
   }).then(res => res.json());
 };
 
-const getOnPaymentAuthorized = (resolve, reject, session, pwToken) => {
+const getOnPaymentAuthorized = (resolve, reject, session, pwToken, amount) => {
   return event => {
     event.preventDefault();
     console.log("PaymentAuthorized event!");
-    performApplePayQRequest(pwToken, event.payment.token.paymentData)
+    performApplePayQRequest(pwToken, event.payment.token.paymentData, amount)
       .then(response => {
         console.log("Q request successful, response is: ", response);
         if (response.status === 200) {
@@ -117,13 +115,18 @@ const getOnPaymentAuthorized = (resolve, reject, session, pwToken) => {
   };
 };
 
-const performApplePayQRequest = (pwToken, data) => {
+const performApplePayQRequest = (pwToken, data, amount) => {
   const request = {
-    request: "authorize",
+    request: "sale",
     paywaySessionToken: pwToken,
     applePayData: data,
     accountInputMode: "applePayToken",
     transactionSourceId: 11,
+    cardTransaction: {
+      eciType: 2,
+      name: "",
+      amount: amount
+    },
     cardAccount: {
       zip: 10001
     }
