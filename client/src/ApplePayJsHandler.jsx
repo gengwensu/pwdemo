@@ -19,10 +19,9 @@ const existsApplePayJsApi = () => {
 
 export const isApplePayJsAvailable = () => {
   return existsApplePayJsApi().then(enabled => {
-    /* return window.ApplePaySession.canMakePaymentsWithActiveCard(
+    return window.ApplePaySession.canMakePaymentsWithActiveCard(
       merchantIdentifier
-    ); */
-    return enabled;
+    );
   });
 };
 
