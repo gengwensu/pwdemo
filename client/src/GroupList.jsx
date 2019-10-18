@@ -27,6 +27,10 @@ class GroupList extends Component {
 
     const pwResponse = await (await fetch("pwbillpayments/Session")).json();
     this.setState({ pwResponse: pwResponse, isLoading: false });
+    console.log(
+      "paywayTransactionToken: ",
+      this.state.pwResponse.paywaySessionToken
+    );
   }
 
   render() {

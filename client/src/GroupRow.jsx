@@ -3,7 +3,7 @@ import { Button, ButtonGroup } from "reactstrap";
 import { Link, withRouter } from "react-router-dom";
 import "./ApplePay.css";
 import ApplePayButton from "./ApplePayButton";
-import { performApplePayPayment } from "./ApplePayHandler";
+import { performPayment } from "./PaymentApi";
 
 class GroupRow extends Component {
   constructor(props) {
@@ -37,11 +37,11 @@ class GroupRow extends Component {
 
   onClick() {
     console.log("amount passed in: ", this.state.payee.amount);
-    performApplePayPayment(this.state.payee.amount, this.state.sessionToken)
-      .then(response => {
-        console.log("Payment success: ", response.status);
-        this.setState({ paymentResponse: response });
-        alert(this.paymentResponse);
+    performPayment(this.state.payee.amount, this.state.sessionToken)
+      .then(paymentStatus => {
+        console.log("Payment status: ", paymentStatus);
+        this.setState({ paymentResponse: paymentStatus });
+        alert("Payment status " + this.state.paymentResponse);
       })
       .catch(err => {
         console.log("Payment error: ", err);

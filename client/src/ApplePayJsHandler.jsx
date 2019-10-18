@@ -1,8 +1,9 @@
-// const merchantIdentifier = "merchant.com.paywaycomplete.payway";
-const APPLE_PAY_VERSION_NUMBER = 1;
-const pwurl = "https://devedgilpayway.net/PaywayWS/";
-const merchantIdentifier = "merchant.com.paywaycomplete.payway";
-const PaymentStatus = { SUCCESS: 0, FAILURE: 1, CANCEL: 2 };
+import {
+  performValidation,
+  performApplePayQRequest
+} from "./ApplePayRestClient";
+import { merchantIdentifier, APPLE_PAY_VERSION_NUMBER } from "./PaymentConf";
+import { PaymentStatus } from "./PaymentStatus";
 
 const existsApplePayJsApi = () => {
   return new Promise((resolve, reject) => {
@@ -17,10 +18,11 @@ const existsApplePayJsApi = () => {
 };
 
 export const isApplePayJsAvailable = () => {
-  return existsApplePayJsApi().then(() => {
-    return window.ApplePaySession.canMakePaymentsWithActiveCard(
+  return existsApplePayJsApi().then(enabled => {
+    /* return window.ApplePaySession.canMakePaymentsWithActiveCard(
       merchantIdentifier
-    );
+    ); */
+    return enabled;
   });
 };
 
@@ -37,22 +39,23 @@ const getPaymentRequest = amount => {
     lineItems: [
       {
         label: "Subscription",
+        type: "final",
         amount: amount
       }
     ],
 
     total: {
       label: "Total",
+      type: "final",
       amount: amount
     },
     supportedNetworks: ["amex", "discover", "masterCard", "visa"],
-    merchantCapabilities: ["supports3DS", "supportsCredit"]
+    merchantCapabilities: ["supports3DS"]
   };
 };
 
 const getOnValidateMerchant = (resolve, reject, session, pwToken) => {
   return event => {
-    /* event.preventDefault(); */
     console.log("validateMerchant event!");
     performValidation(event.validationURL, pwToken)
       .then(response => {
@@ -65,32 +68,13 @@ const getOnValidateMerchant = (resolve, reject, session, pwToken) => {
         session.completeMerchantValidation(
           JSON.parse(response.appleSessionToken)
         );
-        /* console.log("after session.completeMerchantValidation"); */
+        console.log("after session.completeMerchantValidation");
       })
       .catch(err => {
         console.log("Validate error ", err);
         session.abort();
       });
   };
-};
-
-const performValidation = (hostURL, pwToken) => {
-  const request = {
-    request: "getApplePaySession",
-    url: hostURL,
-    domain: "devedgilpayway.net",
-    /* domain: window.location.hostname, */
-    /* sessionType: "applePay", */
-    paywaySessionToken: pwToken
-  };
-  return fetch(pwurl + "Session", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(request)
-  }).then(res => res.json());
 };
 
 const getOnPaymentAuthorized = (resolve, reject, session, pwToken) => {
@@ -117,34 +101,12 @@ const getOnPaymentAuthorized = (resolve, reject, session, pwToken) => {
   };
 };
 
-const performApplePayQRequest = (pwToken, data) => {
-  const request = {
-    request: "sendQueueTransaction",
-    paywaySessionToken: pwToken,
-    applePayData: data,
-    accountInputMode: "applePayToken",
-    transactionSourceId: 11,
-    cardAccount: {
-      zip: 10001
-    }
-  };
-  console.log("in performApplePayQRequest, request: ", request);
-  return fetch(pwurl + "Payment/CreditCard", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(request)
-  }).then(res => res.json());
-};
-
-/* const getOnCancel = (resolve, reject, session) => {
+const getOnCancel = (resolve, reject, session) => {
   return event => {
     console.log("Session cancelled!!!");
     resolve(PaymentStatus.CANCEL);
   };
-}; */
+};
 
 export const performApplePayPayment = (amount, token) => {
   return new Promise((resolve, reject) => {
@@ -167,7 +129,7 @@ export const performApplePayPayment = (amount, token) => {
       token
     );
 
-    // session.oncancel = getOnCancel(resolve, reject, session);
+    session.oncancel = getOnCancel(resolve, reject, session);
 
     session.begin();
   });

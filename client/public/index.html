@@ -25,6 +25,7 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>React App</title>
+    <script src="./PaywayApple.js"></script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -39,5 +40,81 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+    <br />
+    label: amount <input type="text" id="amount" />
+    <br />
+    label: service
+    <input
+      type="text"
+      id="service"
+      value="https://devedgilpayway.net/PaywayWS"
+    />
+    <br />
+    label: paywayTransactionToken
+    <input type="text" id="paywayTransactionToken" />
+    <br />
+    label: transactionName
+    <input type="text" id="transactionName" value="" />
+    <br />
+    label: transactionSourceId
+    <input type="text" id="transactionSourceId" value="11" />
+    <br />
+    label: first
+    <input type="text" id="first" value="tester1" />
+    <br />
+    label: last
+    <input type="text" id="last" value="HNP" />
+    <br />
+    label: address
+    <input type="text" id="address" value="300 W 57th Ave." />
+    <br />
+    label: city
+    <input type="text" id="city" value="New York" />
+    <br />
+    label: state
+    <input type="text" id="state" value="NY" />
+    <br />
+    label: zip
+    <input type="text" id="zip" value="10019" />
+    <br />
+    label: email
+    <input type="text" id="email" value="123@456.com" />
+    <br />
+    label: phone
+    <input type="text" id="phone" value="567-333-9876" />
+    <br />
+    label: notes1
+    <input type="text" id="notes1" value="notes1" />
+    <br />
+    label: notes2
+    <input type="text" id="notes2" value="notes2" />
+    <br />
+    label: notes3
+    <input type="text" id="notes3" value="notes3" />
+
+    <form
+      id="TransactionResults"
+      onsubmit="e=>{e.preventDefault(); applePayClicked();}"
+    >
+      label: results <input id="results" />
+      <button
+        type="submit"
+        className="btn btn-danger btn-sm"
+        id="apple-pay-button"
+      >
+        ApplePay active
+      </button>
+      <button className="btn btn-danger btn-sm" id="no-apple-pay-button">
+        ApplePay inactive
+      </button>
+    </form>
+
+    <button
+      type="button"
+      id="initApplePayButton"
+      onclick="initApplePayButtons()"
+    >
+      click to start PaywayApple.js
+    </button>
   </body>
 </html>
